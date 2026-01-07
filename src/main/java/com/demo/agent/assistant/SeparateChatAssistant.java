@@ -1,6 +1,7 @@
 package com.demo.agent.assistant;
 
 import dev.langchain4j.service.MemoryId;
+import dev.langchain4j.service.SystemMessage;
 import dev.langchain4j.service.UserMessage;
 import dev.langchain4j.service.spring.AiService;
 import static dev.langchain4j.service.spring.AiServiceWiringMode.EXPLICIT;
@@ -10,6 +11,7 @@ import static dev.langchain4j.service.spring.AiServiceWiringMode.EXPLICIT;
         chatMemoryProvider = "chatMemoryProvider")
 public interface SeparateChatAssistant {
 
+    @SystemMessage("请你使用东北话回答我")
     String chat(@MemoryId int memoryId, @UserMessage String userMessage);
 
 }
