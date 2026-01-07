@@ -74,8 +74,8 @@ public class AIServiceTest {
     private SeparateChatAssistant separateChatAssistant;
     @Test
     public void testChatMemory4() {
-        System.out.println(separateChatAssistant.chat(1,"我是张三"));
-        System.out.println(separateChatAssistant.chat(1,"你知道我是谁吗"));
+        System.out.println(separateChatAssistant.chat(5,"我是张三"));
+        System.out.println(separateChatAssistant.chat(5,"你知道我是谁吗"));
         System.out.println(separateChatAssistant.chat(2, "我是谁？"));
     }
 }
