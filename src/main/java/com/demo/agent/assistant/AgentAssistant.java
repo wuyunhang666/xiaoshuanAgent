@@ -8,13 +8,6 @@ import reactor.core.publisher.Flux;
 
 import static dev.langchain4j.service.spring.AiServiceWiringMode.EXPLICIT;
 
-@AiService(
-        wiringMode = EXPLICIT,
-        streamingChatModel = "qwenStreamingChatModel",
-        chatMemoryProvider = "agentChatMemoryProvider",
-        tools = "appointmentTools",
-        contentRetriever = "contentRetrieverPincone"
-)
 public interface AgentAssistant {
 
     @SystemMessage(fromResource = "AgentPrompt.txt")

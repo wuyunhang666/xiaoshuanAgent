@@ -1,6 +1,7 @@
 package com.demo.agent.controller;
 
 import com.demo.agent.assistant.AgentAssistant;
+import com.demo.agent.factory.AgentAssistantFactory;
 import com.demo.agent.model.ChatForm;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

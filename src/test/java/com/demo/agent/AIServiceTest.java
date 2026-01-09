@@ -51,18 +51,6 @@ public class AIServiceTest {
 //输出大语言模型的回复
         System.out.println(aiMessage2.text());
     }
-    @Test
-    public void testChatMemory() {
-        MessageWindowChatMemory chatMemory = MessageWindowChatMemory.withMaxMessages(10);
-        Assistant assistant1 = AiServices.builder(Assistant.class)
-                .chatLanguageModel(qwenChatModel)
-                .chatMemory(chatMemory)
-                .build();
-        String answer1 = assistant1.chat("我是张三");
-        System.out.println(answer1);
-        String answer2 = assistant1.chat("你知道我是谁吗");
-        System.out.println(answer2);
-    }
     @Autowired
     private MemoryChatAssistant memoryChatAssistant;
     @Test
