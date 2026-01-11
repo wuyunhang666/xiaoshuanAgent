@@ -2,6 +2,8 @@ package com.demo.agent.controller;
 
 import com.demo.agent.entity.User;
 import com.demo.agent.model.Result;
+import com.demo.agent.service.ChatMemorySyncService;
+import com.demo.agent.service.UserConversationMemoryService;
 import com.demo.agent.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -15,6 +17,12 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+    
+    @Autowired
+    private UserConversationMemoryService userConversationMemoryService;
+    
+    @Autowired
+    private ChatMemorySyncService chatMemorySyncService;
 
     @PostMapping("/register")
     @Operation(summary = "用户注册", description = "创建新用户")
@@ -36,7 +44,7 @@ public class UserController {
 
     @PostMapping("/login")
     @Operation(summary = "用户登录", description = "用户登录验证")
-    public Result<User> login(@RequestParam String userName, @RequestParam String password) {
+    public Result<User> login(@RequestParam String userName, @RequestParam String password, HttpServletRequest request) {
         if (userName == null || userName.isEmpty()) {
             return Result.error("用户名不能为空");
         }
@@ -46,6 +54,13 @@ public class UserController {
 
         User user = userService.login(userName, password);
         if (user != null) {
+            // 登录成功，设置session中的用户ID
+            HttpSession session = request.getSession();
+            session.setAttribute("userId", user.getId());
+            
+            // 将用户的会话记忆加载到Redis中
+            loadUserConversationsToRedis(user.getId());
+            
             // 登录成功，返回用户信息（不包含密码）
             User responseUser = new User();
             responseUser.setId(user.getId());
@@ -55,5 +70,13 @@ public class UserController {
         } else {
             return Result.error("用户名或密码错误");
         }
+    }
+    
+    /**
+     * 将用户的会话记忆加载到Redis中
+     */
+    private void loadUserConversationsToRedis(Long userId) {
+        // 使用同步服务将用户的会话记忆从MongoDB批量同步到Redis
+        chatMemorySyncService.syncUserMemoriesToRedis(userId, userConversationMemoryService);
     }
 }

@@ -1,0 +1,30 @@
+{
+  "name": "xiaoshuang-medical-assistant",
+  "displayName": "小双医疗助手",
+  "version": "1.0.0",
+  "description": "智能医疗咨询助手应用",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve .",
+    "dev": "npx live-server --port=3000",
+    "build": "echo 'Build completed'"
+  },
+  "keywords": [
+    "medical",
+    "assistant",
+    "chatbot",
+    "healthcare"
+  ],
+  "author": "Medical AI Team",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.2.1",
+    "live-server": "^1.2.2"
+  },
+  "cordova": {
+    "platforms": [
+      "android"
+    ]
+  },
+  "dependencies": {}
+}
