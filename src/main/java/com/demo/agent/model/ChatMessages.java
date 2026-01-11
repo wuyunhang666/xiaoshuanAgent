@@ -16,7 +16,7 @@ public class ChatMessages {
     @Id
     private ObjectId messageId;
 
-    private String userId;//用户id，用于实现分用户管理会话
+    private Long userId;//用户id，用于实现分用户管理会话
     private String memoryId;
     //private Long messageId;
     private String content; //存储当前聊天记录列表的json字符串

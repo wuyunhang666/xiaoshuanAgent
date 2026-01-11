@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 @Component
 public class MongoChatMemoryStore implements ChatMemoryStore {
@@ -35,8 +34,14 @@ public class MongoChatMemoryStore implements ChatMemoryStore {
             return new LinkedList<>();
         }
         String content = chatMessages.getContent();
-        List<ChatMessage> messageList = ChatMessageDeserializer.messagesFromJson(content);
-        return messageList;
+        try {
+            List<ChatMessage> messageList = ChatMessageDeserializer.messagesFromJson(content);
+            return messageList != null ? messageList : new LinkedList<>();
+        } catch (Exception e) {
+            // 解析失败时返回空列表
+            System.err.println("Failed to deserialize messages from MongoDB for memoryId: " + memoryId + ", error: " + e.getMessage());
+            return new LinkedList<>();
+        }
     }
 
     @Override
@@ -58,7 +63,7 @@ public class MongoChatMemoryStore implements ChatMemoryStore {
      * 从memoryId中提取userId（如果格式为userId:memoryId）
      */
     private Long extractUserIdFromMemoryId(String memoryIdStr) {
-        if (memoryIdStr.contains(":")) {
+        if (memoryIdStr != null && memoryIdStr.contains(":")) {
             String[] parts = memoryIdStr.split(":", 2);
             if (parts.length >= 1) {
                 try {

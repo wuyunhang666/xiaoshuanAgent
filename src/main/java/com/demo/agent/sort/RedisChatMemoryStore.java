@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 
 @Component
 public class RedisChatMemoryStore implements ChatMemoryStore {
@@ -44,6 +43,7 @@ public class RedisChatMemoryStore implements ChatMemoryStore {
                 return messageList != null ? messageList : new LinkedList<>();
             } catch (Exception e) {
                 // 解析失败时返回空列表
+                System.err.println("Failed to deserialize messages from Redis for memoryId: " + memoryId + ", error: " + e.getMessage());
                 return new LinkedList<>();
             }
         }
@@ -59,10 +59,10 @@ public class RedisChatMemoryStore implements ChatMemoryStore {
         
         redisTemplate.opsForValue().set(key, messagesToJson, EXPIRATION_TIME, TimeUnit.SECONDS);
         
-        // 第二步：解析memoryId获取userId（如果格式为userId:memoryId）
+        // 第二步：解析memoryId获取userId
         Long userId = extractUserIdFromMemoryId(memoryId.toString());
         
-        // 第三步：立即将"修改指令"提交到异步线程池，由异步任务完成MongoDB的同步
+        // 第三步：异步更新MongoDB
         asyncMongoWriter.updateMessagesInMongo(memoryId, list, userId);
         // 第四步：直接返回，无需等待MongoDB同步完成（用户无感知延迟）
     }
@@ -85,10 +85,10 @@ public class RedisChatMemoryStore implements ChatMemoryStore {
     }
     
     /**
-     * 从memoryId中提取userId（如果格式为userId:memoryId）
+     * 从memoryId中提取userId
      */
     private Long extractUserIdFromMemoryId(String memoryIdStr) {
-        if (memoryIdStr.contains(":")) {
+        if (memoryIdStr != null && memoryIdStr.contains(":")) {
             String[] parts = memoryIdStr.split(":", 2);
             if (parts.length >= 1) {
                 try {

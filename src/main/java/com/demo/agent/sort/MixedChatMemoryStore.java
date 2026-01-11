@@ -14,12 +14,9 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+
 
 /**
  * 混合聊天记忆存储实现，采用实时同步方案（写Redis的同时异步写MongoDB）
@@ -38,7 +35,7 @@ public class MixedChatMemoryStore implements ChatMemoryStore {
 
     @Override
     public List<ChatMessage> getMessages(Object memoryId) {
-        // 优先从Redis获取（保证实时性）
+        // 优先从Redis获取
         String redisKey = buildRedisKey(memoryId.toString());
         Object redisValue = redisTemplate.opsForValue().get(redisKey);
         
@@ -66,12 +63,20 @@ public class MixedChatMemoryStore implements ChatMemoryStore {
         }
         
         String content = chatMessages.getContent();
-        List<ChatMessage> messageList = ChatMessageDeserializer.messagesFromJson(content);
+        List<ChatMessage> messageList = null;
+        
+        try {
+            messageList = ChatMessageDeserializer.messagesFromJson(content);
+        } catch (Exception e) {
+            // 如果反序列化失败，返回空列表
+            System.err.println("Failed to deserialize messages from MongoDB for memoryId: " + memoryId + ", error: " + e.getMessage());
+            messageList = new LinkedList<>();
+        }
         
         // 将从MongoDB获取的数据写入Redis（并设置过期时间）
         if (messageList != null) {
             String messagesToJson = ChatMessageSerializer.messagesToJson(messageList);
-            redisTemplate.opsForValue().set(redisKey, messagesToJson, 24 * 60 * 60, java.util.concurrent.TimeUnit.SECONDS);
+            redisTemplate.opsForValue().set(redisKey, messagesToJson, 24 * 60 * 60, TimeUnit.SECONDS);
         }
         
         return messageList != null ? messageList : new LinkedList<>();
@@ -82,14 +87,14 @@ public class MixedChatMemoryStore implements ChatMemoryStore {
         // 第一步：直接修改Redis中的会话数据（保证实时性）
         String messagesToJson = ChatMessageSerializer.messagesToJson(list);
         String redisKey = buildRedisKey(memoryId.toString());
-        redisTemplate.opsForValue().set(redisKey, messagesToJson, 24 * 60 * 60, java.util.concurrent.TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set(redisKey, messagesToJson, 24 * 60 * 60, TimeUnit.SECONDS);
         
-        // 第二步：解析memoryId获取userId（如果格式为userId:memoryId）
+        // 第二步：从memoryId中解析userId
         Long userId = extractUserIdFromMemoryId(memoryId.toString());
         
         // 第三步：立即将"修改指令"提交到异步线程池，由异步任务完成MongoDB的同步
         asyncMongoWriter.updateMessagesInMongo(memoryId, list, userId);
-        // 第四步：直接返回，无需等待MongoDB同步完成（用户无感知延迟）
+        // 第四步：直接返回，无需等待MongoDB同步完成
     }
 
     @Override
@@ -113,7 +118,7 @@ public class MixedChatMemoryStore implements ChatMemoryStore {
      * 从memoryId中提取userId（如果格式为userId:memoryId）
      */
     private Long extractUserIdFromMemoryId(String memoryIdStr) {
-        if (memoryIdStr.contains(":")) {
+        if (memoryIdStr != null && memoryIdStr.contains(":")) {
             String[] parts = memoryIdStr.split(":", 2);
             if (parts.length >= 1) {
                 try {
@@ -132,11 +137,6 @@ public class MixedChatMemoryStore implements ChatMemoryStore {
      */
     public List<ChatMessages> getChatMessagesByUserId(Long userId) {
         // 直接从MongoDB查询，确保获取最新数据
-        return mongoTemplate.find(
-            new org.springframework.data.mongodb.core.query.Query(
-                org.springframework.data.mongodb.core.query.Criteria.where("userId").is(userId)
-            ), 
-            ChatMessages.class
-        );
+        return mongoTemplate.find(new Query(Criteria.where("userId").is(userId)), ChatMessages.class);
     }
 }

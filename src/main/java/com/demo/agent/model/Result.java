@@ -39,4 +39,9 @@ public class Result<T> {
         result.message = message;
         return result;
     }
+    
+    // 判断是否成功
+    public boolean isSuccess() {
+        return this.code != null && this.code.equals(200);
+    }
 }

@@ -11,11 +11,6 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
-/**
- * 异步写入MongoDB,保证主线程不受阻塞
- */
 @Component
 public class AsyncMongoWriter {
 
@@ -23,7 +18,7 @@ public class AsyncMongoWriter {
     private MongoTemplate mongoTemplate;
 
     @Async
-    public void updateMessagesInMongo(Object memoryId, List<ChatMessage> list, Long userId) {
+    public void updateMessagesInMongo(Object memoryId, java.util.List<ChatMessage> list, Long userId) {
         try {
             String messagesToJson = ChatMessageSerializer.messagesToJson(list);
             
@@ -36,6 +31,23 @@ public class AsyncMongoWriter {
             if (userId != null) {
                 update.set("userId", userId);
             }
+            
+            mongoTemplate.upsert(query, update, ChatMessages.class);
+        } catch (Exception e) {
+            // 记录日志或处理异常
+            e.printStackTrace();
+        }
+    }
+
+    @Async
+    public void updateMessagesInMongoWithoutUserId(Object memoryId, java.util.List<ChatMessage> list) {
+        try {
+            String messagesToJson = ChatMessageSerializer.messagesToJson(list);
+            
+            Criteria criteria = Criteria.where("memoryId").is(memoryId);
+            Query query = new Query(criteria);
+            Update update = new Update();
+            update.set("content", messagesToJson);
             
             mongoTemplate.upsert(query, update, ChatMessages.class);
         } catch (Exception e) {

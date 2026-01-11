@@ -35,7 +35,7 @@ public class ToolsTest {
     @Test
     public void testAppointmentTools() {
         StringBuilder result = new StringBuilder();
-        agentAssistant.chat(102L, "请你查询一下成都明天的天气")
+        agentAssistant.chat("12:20", "请你查询一下成都明天的天气")
                 .doOnNext(result::append)
                 .doOnComplete(() -> {
                     System.out.println("AI助手回复: " + result.toString());
@@ -45,7 +45,7 @@ public class ToolsTest {
     @Test
     public void testContentRetriever() {
         StringBuilder result = new StringBuilder();
-        agentAssistant.chat(103L, "请你查询一下成都明天的天气？")
+        agentAssistant.chat("13:20", "请你查询一下成都明天的天气？")
                 .doOnNext(result::append)
                 .doOnComplete(() -> {
                     System.out.println("AI助手回复: " + result.toString());

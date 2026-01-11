@@ -21,7 +21,9 @@ public class MongoCRUDTest {
     @Test
     public void insertTest2(){
         ChatMessages messages = new ChatMessages();
-        messages.setContent("5555");
+        messages.setUserId(4L);
+        messages.setMemoryId("4:101");
+        messages.setContent("test4-01内容{}///***----...");
         mongoTemplate.insert(messages);
     }
     @Test
