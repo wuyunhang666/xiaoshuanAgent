@@ -17,4 +17,8 @@ public interface UserService {
      * 根据用户名查询用户
      */
     User findByUserName(String userName);
+    /**
+     * 根据用户Id查询用户所处的经纬度
+     */
+    String getLocation(Long  id);
 }

@@ -1,0 +1,35 @@
+{
+  "name": "medical-assistant-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "description": "小双医疗助手前端应用，帮助用户解答医院挂号问题",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-repo/medical-assistant-frontend.git"
+  },
+  "keywords": [
+    "vue",
+    "medical",
+    "assistant",
+    "chatbot",
+    "healthcare"
+  ],
+  "author": "Developer",
+  "license": "MIT",
+  "dependencies": {
+    "vue": "^3.4.21",
+    "axios": "^1.6.0",
+    "vue-router": "^4.2.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.4",
+    "vite": "^5.1.4"
+  }
+}

@@ -1,7 +1,10 @@
 package com.demo.agent.tools;
 
 import com.demo.agent.entity.Appointment;
+import com.demo.agent.mapper.UserMapper;
 import com.demo.agent.service.AppointmentService;
+import com.demo.agent.service.UserService;
+import com.demo.agent.service.impl.UserServiceImpl;
 import dev.langchain4j.agent.tool.P;
 import dev.langchain4j.agent.tool.Tool;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +16,10 @@ public class AppointmentTools {
 
     @Autowired
     private AppointmentService appointmentService;
+    @Autowired
+    private UserMapper userMapper;
+    @Autowired
+    private UserService userService;
 
     @Tool(name="预约挂号", value = "根据参数，先执行工具方法queryDepartment查询是否可预约，并直接给用户回答是否可预约，并让用户确认所有预约信息，用户确认后再进行预约。")
     public String bookAppointment(Appointment appointment){
@@ -63,5 +70,10 @@ public boolean queryDepartment(
         //如果有排班，则判断医生排班时间段是否已约满（约满返回false，有空闲时间返回true）
         //TODO 设置经纬度信息，方便来判断医院距离
         return true;
+    }
+    @Tool(name = "获取用户所处地址的经纬度信息",value = "根据用户Id，查出用户经纬度信息，根据经纬度查询用户所处的城市信息，从而查询出用户附近的医院信息")
+    public String getLocation(Long  id){
+        String location = userService.getLocation(id);
+        return location;
     }
 }

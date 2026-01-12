@@ -52,4 +52,11 @@ public class UserServiceImpl implements UserService {
         wrapper.eq("user_name", userName);
         return userMapper.selectOne(wrapper);
     }
+
+    @Override
+    public String getLocation(Long id) {
+        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        wrapper.eq("id", id);
+        return userMapper.selectOne( wrapper).getAddress();
+    }
 }
