@@ -63,4 +63,15 @@ public class UserChatServiceImpl implements UserChatService {
         
         return result;
     }
+
+    @Override
+    public Boolean createUserSessions(String memoryId) {
+
+        return mixedChatMemoryStore.createUserChat(memoryId);
+    }
+
+    @Override
+    public void deleteUserSessions(String memoryId) {
+        mixedChatMemoryStore.deleteMessages(memoryId);
+    }
 }

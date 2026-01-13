@@ -7,6 +7,7 @@ import dev.langchain4j.data.message.ChatMessageDeserializer;
 import dev.langchain4j.data.message.ChatMessageSerializer;
 import dev.langchain4j.store.memory.chat.ChatMemoryStore;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -21,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * 混合聊天记忆存储实现，采用实时同步方案（写Redis的同时异步写MongoDB）
  */
+@Slf4j
 @Component
 public class MixedChatMemoryStore implements ChatMemoryStore {
 
@@ -99,12 +101,16 @@ public class MixedChatMemoryStore implements ChatMemoryStore {
 
     @Override
     public void deleteMessages(Object memoryId) {
-        // 删除Redis中的数据
-        String redisKey = buildRedisKey(memoryId.toString());
-        redisTemplate.delete(redisKey);
-        
-        // 异步删除MongoDB中的数据
-        asyncMongoWriter.deleteMessagesInMongo(memoryId);
+        try{
+            // 删除Redis中的数据
+            String redisKey = buildRedisKey(memoryId.toString());
+            redisTemplate.delete(redisKey);
+
+            // 异步删除MongoDB中的数据
+            asyncMongoWriter.deleteMessagesInMongo(memoryId);
+        }catch (Exception e){
+            log.error("删除会话失败！memoryId:{}",memoryId);
+        }
     }
 
     /**
@@ -138,5 +144,26 @@ public class MixedChatMemoryStore implements ChatMemoryStore {
     public List<ChatMessages> getChatMessagesByUserId(Long userId) {
         // 直接从MongoDB查询，确保获取最新数据
         return mongoTemplate.find(new Query(Criteria.where("userId").is(userId)), ChatMessages.class);
+    }
+
+    /**
+     * 新增一个会话
+     * @param memoryId
+     */
+    public Boolean createUserChat(String memoryId) {
+        try { //先构建一个空的消息列表
+            List<ChatMessage> newChatlist = new LinkedList<>();
+            String messagesToJson = ChatMessageSerializer.messagesToJson(newChatlist);
+            String key = buildRedisKey(memoryId);
+            //写入Redis中
+            redisTemplate.opsForValue().set(key, messagesToJson, 24 * 60 * 60, TimeUnit.SECONDS);
+            //再写入MongoDB中
+            asyncMongoWriter.updateMessagesInMongo(memoryId, newChatlist, extractUserIdFromMemoryId(memoryId));
+            return true;
+        }catch (Exception e){
+            log.warn("新增会话失败，memoryId：{}",memoryId);
+            e.printStackTrace();
+            return false;
+        }
     }
 }

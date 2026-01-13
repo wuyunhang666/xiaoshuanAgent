@@ -6,8 +6,12 @@ import com.demo.agent.entity.UserConversationMemory;
 import com.demo.agent.mapper.UserConversationMemoryMapper;
 import com.demo.agent.model.ChatMessages;
 import com.demo.agent.service.UserConversationMemoryService;
+import dev.langchain4j.data.message.ChatMessage;
+import dev.langchain4j.data.message.ChatMessageDeserializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -130,7 +134,7 @@ public class UserConversationMemoryServiceImpl extends ServiceImpl<UserConversat
         for (UserConversationMemory memory : userMemories) {
             // 获取每个会话的详细聊天内容
             String memoryId = memory.getMemoryId();
-            List<dev.langchain4j.data.message.ChatMessage> messages = getMessagesFromMongoDb(memoryId);
+            List<ChatMessage> messages = getMessagesFromMongoDb(memoryId);
             
             Map<String, Object> sessionInfo = new HashMap<>();
             sessionInfo.put("conversation", memory);
@@ -142,20 +146,17 @@ public class UserConversationMemoryServiceImpl extends ServiceImpl<UserConversat
     }
     
     // 从MongoDB获取聊天消息的辅助方法
-    private List<dev.langchain4j.data.message.ChatMessage> getMessagesFromMongoDb(String memoryId) {
-        org.springframework.data.mongodb.core.query.Criteria criteria = 
-            org.springframework.data.mongodb.core.query.Criteria.where("memoryId").is(memoryId);
-        org.springframework.data.mongodb.core.query.Query query = 
-            new org.springframework.data.mongodb.core.query.Query(criteria);
+    private List<ChatMessage> getMessagesFromMongoDb(String memoryId) {
+            Criteria criteria = Criteria.where("memoryId").is(memoryId);
+             Query query = new Query(criteria);
         
-        com.demo.agent.model.ChatMessages chatMessages = 
-            mongoTemplate.findOne(query, com.demo.agent.model.ChatMessages.class);
+        ChatMessages chatMessages = mongoTemplate.findOne(query, ChatMessages.class);
         
         if (chatMessages != null) {
             String content = chatMessages.getContent();
-            return dev.langchain4j.data.message.ChatMessageDeserializer.messagesFromJson(content);
+            return ChatMessageDeserializer.messagesFromJson(content);
         }
         
-        return new java.util.ArrayList<>();
+        return new ArrayList<>();
     }
 }

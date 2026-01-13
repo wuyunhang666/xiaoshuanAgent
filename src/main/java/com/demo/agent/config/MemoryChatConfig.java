@@ -16,7 +16,7 @@ public class MemoryChatConfig {
     @Bean
     public ChatMemory chatMemory() {
         return MessageWindowChatMemory.builder()
-                .maxMessages(10)
+                .maxMessages(50)
                 .chatMemoryStore(mixedChatMemoryStore) // 使用新的混合存储
                 .build();
     }

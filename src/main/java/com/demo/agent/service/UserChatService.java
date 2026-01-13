@@ -21,4 +21,12 @@ public interface UserChatService {
      * 获取用户所有会话的详细信息（包含实际消息内容）
      */
     Map<String, Object> getUserAllConversationsDetail(Long userId);
+
+    /**
+     * 新增会话的功能
+     * @param memoryId 前端要传的包含UserId的会话标识符
+     */
+    Boolean createUserSessions(String memoryId);
+
+    void deleteUserSessions(String memoryId);
 }

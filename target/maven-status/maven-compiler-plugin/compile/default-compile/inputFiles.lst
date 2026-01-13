@@ -10,6 +10,7 @@ D:\WorkSpace\Agent\src\main\java\com\demo\agent\config\EmbeddingStoreConfig.java
 D:\WorkSpace\Agent\src\main\java\com\demo\agent\config\MyBatisConfig.java
 D:\WorkSpace\Agent\src\main\java\com\demo\agent\service\UserConversationMemoryService.java
 D:\WorkSpace\Agent\src\main\java\com\demo\agent\tools\CalculatorTools.java
+D:\WorkSpace\Agent\src\main\java\com\demo\agent\config\CorsConfig.java
 D:\WorkSpace\Agent\src\main\java\com\demo\agent\sort\RedisChatMemoryStore.java
 D:\WorkSpace\Agent\src\main\java\com\demo\agent\Main.java
 D:\WorkSpace\Agent\src\main\java\com\demo\agent\model\ChatForm.java

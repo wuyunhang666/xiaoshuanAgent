@@ -1,6 +1,6 @@
 package com.demo.agent.config;
 
-import com.demo.agent.sort.MongoChatMemoryStore;
+import com.demo.agent.sort.MixedChatMemoryStore;
 import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.loader.FileSystemDocumentLoader;
 import dev.langchain4j.data.segment.TextSegment;
@@ -22,7 +22,7 @@ import java.util.List;
 @Configuration
 public class AgentConfig {
     @Autowired
-    private MongoChatMemoryStore mongoChatMemoryStore;
+    private MixedChatMemoryStore mixedChatMemoryStore;
 
     @Autowired
     private EmbeddingStore embeddingStore;
@@ -35,7 +35,7 @@ public class AgentConfig {
             MessageWindowChatMemory.builder()
                     .id(memoryId)
                     .maxMessages(50)
-                    .chatMemoryStore(mongoChatMemoryStore)
+                    .chatMemoryStore(mixedChatMemoryStore)
                     .build();
     }
     @Bean

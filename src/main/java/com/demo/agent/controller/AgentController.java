@@ -18,6 +18,7 @@ import reactor.core.publisher.Flux;
 public class AgentController {
     @Autowired
     private AgentAssistant agentAssistant;
+
     @Operation(summary = "对话")
     @PostMapping(value = "/chat", produces = "text/stream;charset=utf-8")
     public Flux<String> chat(@RequestBody ChatForm chatForm){

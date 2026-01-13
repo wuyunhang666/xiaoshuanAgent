@@ -4,10 +4,12 @@ import com.demo.agent.model.ChatMessages;
 import com.demo.agent.sort.RedisChatMemoryStore;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.ChatMessageDeserializer;
+import dev.langchain4j.data.message.ChatMessageSerializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -46,8 +48,7 @@ public class ChatMemorySyncService {
     }
     
     /**
-     * 将指定memoryId的聊天记录从Redis同步到MongoDB
-     * 注意：在新的异步模式下，这个方法主要用于特殊情况下的数据同步
+     * 将指定memoryId的聊天记录从Redis同步到MongoDB（特殊情况）
      */
     public void syncMemoryFromRedisToMongo(String memoryId) {
         // 从Redis获取聊天消息
@@ -56,14 +57,13 @@ public class ChatMemorySyncService {
         // 由于现在采用Redis写入后异步写入MongoDB的模式，
         // 此方法主要用于手动触发同步或数据修复
         if (messages != null && !messages.isEmpty()) {
-            String content = dev.langchain4j.data.message.ChatMessageSerializer.messagesToJson(messages);
+            String content = ChatMessageSerializer.messagesToJson(messages);
             
             Criteria criteria = Criteria.where("memoryId").is(memoryId);
-            org.springframework.data.mongodb.core.query.Query query = new org.springframework.data.mongodb.core.query.Query(criteria);
+            Query query = new Query(criteria);
             
             // 使用upsert更新或插入
-            org.springframework.data.mongodb.core.query.Update update = 
-                org.springframework.data.mongodb.core.query.Update.update("content", content);
+            Update update = Update.update("content", content);
             mongoTemplate.upsert(query, update, ChatMessages.class);
         }
     }
